@@ -28,8 +28,7 @@ class GroupText:
         print "Press ENTER to stop texting."
         line = raw_input("> ")
         while line.strip():
-            #self.group_send(line)
-            print line
+            self.group_send(line)
             line = raw_input("> ")
 
     # Send to a list of phone numbers. TODO: synchro with queues
