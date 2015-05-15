@@ -15,58 +15,57 @@ class GroupText:
         to_num = "+%s" % to_num
         try: 
             msg_handler = self.client.messages.create(
-                body=msg,
-                to=to_num, 
-                from_=self.from_num
+                to=to_num, from_=self.from_num, 
+                body=msg
             )
-        except Exception as err:
-            print err
-            print 'Could not send %s to %s' % (msg, to_num)
+        except Exception:
+            print 'Error sending %s to %s' % (msg, to_num)
         print "Sending \"%s\" to %s" % (msg, to_num)
 
     # Prompt forever!
     def prompt_msg(self):
         print "Type in a line and we'll send it to everyone on your list!"
         print "Press ENTER to stop texting."
-        while True:
+        line = raw_input("> ")
+        while line.strip():
+            #self.group_send(line)
+            print line
             line = raw_input("> ")
-            if not line.strip(): return
-            self.group_send(line)
 
-    # Send to a list of phone numbers.
-    # TODO: synchro with queues
+    # Send to a list of phone numbers. TODO: synchro with queues
     def group_send(self, msg):
-        for number in self.numbers: 
-            self.send_text(msg, number)
+        for number in self.numbers: self.send_text(msg, number)
 
 def main():
     phone_env_var = 'TWILIO_PHONE_NUMBER'
 
+    # Usage checks
     if len(sys.argv) is not 2: 
         print "Usage: python send.py [numbers.csv]"
-        return
+        return 1
 
     phone_no = os.environ.get('TWILIO_PHONE_NUMBER')
     if not phone_no:
         print "Please set %s environment variable:" % phone_env_var
-        print "$ export %s=\"+15555555555\"" % phone_env_var
-        return
+        print "\t$ export %s=\"+15555555555\"" % phone_env_var
+        return 1
 
     try: # read phone numbers file
         with open(sys.argv[1]) as f:
             numbers = f.read().splitlines()
     except Exception as err:
         print err
-        return
+        return 1
 
     try: # init Twilio client
         client = TwilioRestClient()
     except TwilioException as err:
         print err # Set environment variables!
-        return
+        return 1
 
     instance = GroupText(client, phone_no, numbers)
     instance.prompt_msg()
+    return 0
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
